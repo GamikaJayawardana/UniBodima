@@ -39,6 +39,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           image: user.image,
+          role: user.role || 'user',
         };
       },
     }),
@@ -65,12 +66,19 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = (user as any).role || 'user';
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user) {
         await connectToDatabase();
         const dbUser = await User.findOne({ email: session.user.email });
         if (dbUser) {
           (session.user as any).id = dbUser._id.toString();
+          (session.user as any).role = dbUser.role || 'user';
         }
       }
       return session;

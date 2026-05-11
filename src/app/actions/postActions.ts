@@ -1,9 +1,8 @@
 "use server";
 
 import connectToDatabase from "@/lib/mongodb";
-import { Post, IPost } from "@/models/Post";
-import { OfferPost } from "@/models/OfferPost";
-import { RequestPost } from "@/models/RequestPost";
+import { OfferPost, IOfferPost } from "@/models/OfferPost";
+import { RequestPost, IRequestPost } from "@/models/RequestPost";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { v2 as cloudinary } from "cloudinary";
@@ -163,27 +162,48 @@ export async function getPosts(type?: "offer" | "request", limit: number = 8) {
   try {
     await connectToDatabase();
     
-    const query = type ? { type } : {};
+    let posts: any[] = [];
     
-    const posts = await Post.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .populate('author', 'name image university')
-      .lean();
+    if (type === "offer") {
+      posts = await OfferPost.find({})
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .populate('author', 'name image university role')
+        .lean();
+    } else if (type === "request") {
+      posts = await RequestPost.find({})
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .populate('author', 'name image university role')
+        .lean();
+    } else {
+      // Fetch both and merge
+      const [offers, requests] = await Promise.all([
+        OfferPost.find({}).sort({ createdAt: -1 }).limit(limit).populate('author', 'name image university role').lean(),
+        RequestPost.find({}).sort({ createdAt: -1 }).limit(limit).populate('author', 'name image university role').lean()
+      ]);
+      posts = [...offers, ...requests].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      }).slice(0, limit);
+    }
       
     // Transform ObjectId and dates to strings for client components
-    return posts.map((p: any) => ({
+    const transformed = posts.map((p: any) => ({
       ...p,
       _id: p._id.toString(),
-      author: {
-        _id: p.author._id.toString(),
-        name: p.author.name,
-        image: p.author.image,
-        university: p.author.university,
-      },
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString(),
+      author: p.author ? {
+        _id: p.author._id?.toString() || "unknown",
+        name: p.author.name || "Unknown",
+        image: p.author.image || "",
+        university: p.author.university || "",
+        role: p.author.role || "user",
+      } : { name: "Unknown", _id: "unknown", role: "user" },
+      createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
     }));
+    return JSON.parse(JSON.stringify(transformed));
   } catch (error) {
     console.error("Error fetching posts:", error);
     return [];
@@ -194,31 +214,49 @@ export async function getPostById(postId: string) {
   try {
     await connectToDatabase();
 
-    await Post.findByIdAndUpdate(postId, {
-      $inc: { viewCount: 1 },
-      $set: { lastViewedAt: new Date() },
-    });
-
-    const post = await Post.findById(postId)
-      .populate('author', 'name image email phoneNumber university district bio rating reviewCount')
+    // Try finding in offers first
+    let post = await OfferPost.findById(postId)
+      .populate('author', 'name image email phoneNumber university district bio rating reviewCount role')
       .lean();
+    
+    if (post) {
+      await OfferPost.findByIdAndUpdate(postId, {
+        $inc: { viewCount: 1 },
+        $set: { lastViewedAt: new Date() },
+      });
+    } else {
+      // Try requests
+      post = await RequestPost.findById(postId)
+        .populate('author', 'name image email phoneNumber university district bio rating reviewCount role')
+        .lean();
+      
+      if (post) {
+        await RequestPost.findByIdAndUpdate(postId, {
+          $inc: { viewCount: 1 },
+          $set: { lastViewedAt: new Date() },
+        });
+      }
+    }
       
     if (!post) {
       return { success: false, error: "Post not found" };
     }
 
-    return {
-      success: true,
-      post: {
+    const transformedPost = {
         ...post,
         _id: (post as any)._id.toString(),
-        author: {
+        author: (post as any).author ? {
           ...(post as any).author,
-          _id: (post as any).author._id.toString(),
-        },
-        createdAt: (post as any).createdAt.toISOString(),
-        updatedAt: (post as any).updatedAt.toISOString(),
-      }
+          _id: (post as any).author._id?.toString() || "unknown",
+          role: (post as any).author.role || "user",
+        } : { name: "Unknown", _id: "unknown", role: "user" },
+        createdAt: (post as any).createdAt ? new Date((post as any).createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: (post as any).updatedAt ? new Date((post as any).updatedAt).toISOString() : new Date().toISOString(),
+      };
+
+    return {
+      success: true,
+      post: JSON.parse(JSON.stringify(transformedPost))
     };
   } catch (error: any) {
     console.error("Error fetching post:", error);
@@ -242,6 +280,7 @@ export async function searchAndFilterPosts(filters: {
   rating?: number;
   distanceMax?: number;
   q?: string;
+  sortBy?: string;
   page?: number;
   limit?: number;
 }) {
@@ -249,7 +288,7 @@ export async function searchAndFilterPosts(filters: {
     await connectToDatabase();
     
     const {
-      type,
+      type = 'offer', // Default to offer if not specified for search consistency
       university,
       priceMin,
       priceMax,
@@ -264,13 +303,13 @@ export async function searchAndFilterPosts(filters: {
       rating,
       distanceMax,
       q,
+      sortBy = 'newest',
       page = 1,
       limit = 10
     } = filters;
 
     const query: any = {};
 
-    if (type) query.type = type;
     if (university) query.targetUniversity = university;
     if (genderPreference) query.genderPreference = { $in: [genderPreference, 'Any'] };
     if (roomType) query.roomType = roomType;
@@ -296,58 +335,55 @@ export async function searchAndFilterPosts(filters: {
 
       if (type === 'offer') {
         query.price = priceQuery;
-      } else if (type === 'request') {
+      } else {
         if (priceMin) query['budgetRange.max'] = { $gte: priceMin };
         if (priceMax) query['budgetRange.min'] = { $lte: priceMax };
-      } else {
-        // If type is not specified, check both
-        query.$or = query.$or || [];
-        query.$or.push(
-          { price: priceQuery },
-          { 
-            $and: [
-              { 'budgetRange.max': { $gte: priceMin || 0 } },
-              { 'budgetRange.min': { $lte: priceMax || 9999999 } }
-            ]
-          }
-        );
       }
     }
 
-    // Facilities filter
-    if (hasWiFi) query['roomFacilities.hasWiFi'] = true;
-    if (hasAC) query['roomFacilities.hasAC'] = true;
-    if (hasFurnished) query['roomFacilities.isFurnished'] = true;
-    if (hasParking) query['buildingAmenities.hasParking'] = true;
-    if (mealIncluded) query['mealPlan.included'] = true;
+    // Facilities filter (offer only)
+    if (type === 'offer') {
+      if (hasWiFi) query['roomFacilities.hasWiFi'] = true;
+      if (hasAC) query['roomFacilities.hasAC'] = true;
+      if (hasFurnished) query['roomFacilities.isFurnished'] = true;
+      if (hasParking) query['buildingAmenities.hasParking'] = true;
+      if (mealIncluded) query['mealPlan.included'] = true;
+    }
 
     const skip = (page - 1) * limit;
+    const model = type === 'offer' ? OfferPost : RequestPost;
 
-    const posts = await Post.find(query)
-      .sort({ createdAt: -1 })
+    let sortQuery: any = { createdAt: -1 };
+    if (sortBy === 'price_asc') sortQuery = type === 'offer' ? { price: 1 } : { 'budgetRange.min': 1 };
+    else if (sortBy === 'price_desc') sortQuery = type === 'offer' ? { price: -1 } : { 'budgetRange.max': -1 };
+    else if (sortBy === 'distance_asc') sortQuery = { distanceToUni: 1 };
+    
+    const posts = await model.find(query)
+      .sort(sortQuery)
       .skip(skip)
       .limit(limit)
-      .populate('author', 'name image university')
+      .populate('author', 'name image university role')
       .lean();
 
-    const total = await Post.countDocuments(query);
+    const total = await model.countDocuments(query);
 
     const transformedPosts = posts.map((p: any) => ({
       ...p,
       _id: p._id.toString(),
-      author: {
-        _id: p.author._id.toString(),
-        name: p.author.name,
-        image: p.author.image,
-        university: p.author.university,
-      },
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString(),
+      author: p.author ? {
+        _id: p.author._id?.toString() || "unknown",
+        name: p.author.name || "Unknown",
+        image: p.author.image || "",
+        university: p.author.university || "",
+        role: p.author.role || "user",
+      } : { name: "Unknown", _id: "unknown", role: "user" },
+      createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
     }));
 
     return {
       success: true,
-      posts: transformedPosts,
+      posts: JSON.parse(JSON.stringify(transformedPosts)),
       pagination: {
         total,
         page,
@@ -372,36 +408,42 @@ export async function getUserPosts(userId: string, type?: 'offer' | 'request') {
     if (type === "offer") {
       posts = await OfferPost.find(query)
         .sort({ createdAt: -1 })
-        .populate("author", "name image university")
+        .populate("author", "name image university role")
         .lean();
     } else if (type === "request") {
       posts = await RequestPost.find(query)
         .sort({ createdAt: -1 })
-        .populate("author", "name image university")
+        .populate("author", "name image university role")
         .lean();
     } else {
-      posts = await Post.find(query)
-        .sort({ createdAt: -1 })
-        .populate("author", "name image university")
-        .lean();
+      const [offers, requests] = await Promise.all([
+        OfferPost.find(query).sort({ createdAt: -1 }).populate("author", "name image university role").lean(),
+        RequestPost.find(query).sort({ createdAt: -1 }).populate("author", "name image university role").lean()
+      ]);
+      posts = [...offers, ...requests].sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
     }
 
     return {
       success: true,
-      posts: posts.map((p: any) => ({
+      posts: JSON.parse(JSON.stringify(posts.map((p: any) => ({
         ...p,
         _id: p._id.toString(),
         viewCount: p.viewCount || 0,
         saveCount: Array.isArray(p.savedBy) ? p.savedBy.length : 0,
-        author: {
-          _id: p.author._id.toString(),
-          name: p.author.name,
-          image: p.author.image,
-          university: p.author.university,
-        },
-        createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString(),
-      }))
+        author: p.author ? {
+          _id: p.author._id?.toString() || "unknown",
+          name: p.author.name || "Unknown",
+          image: p.author.image || "",
+          university: p.author.university || "",
+          role: p.author.role || "user",
+        } : { name: "Unknown", _id: "unknown", role: "user" },
+        createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
+      }))))
     };
   } catch (error: any) {
     console.error("Error fetching user posts:", error);
@@ -432,7 +474,11 @@ export async function deletePost(postId: string) {
 
     await connectToDatabase();
     
-    const post = await Post.findById(postId);
+    let post = await OfferPost.findById(postId);
+    if (!post) {
+      post = await RequestPost.findById(postId);
+    }
+
     if (!post) {
       return { success: false, error: "Post not found" };
     }
@@ -443,10 +489,8 @@ export async function deletePost(postId: string) {
 
     if (post.type === "offer") {
       await OfferPost.findByIdAndDelete(postId);
-    } else if (post.type === "request") {
-      await RequestPost.findByIdAndDelete(postId);
     } else {
-      await Post.findByIdAndDelete(postId);
+      await RequestPost.findByIdAndDelete(postId);
     }
     revalidatePath("/");
     revalidatePath("/offers");
@@ -460,7 +504,35 @@ export async function deletePost(postId: string) {
     return { success: false, error: error.message };
   }
 }
+export async function getUniversityCounts() {
+  try {
+    await connectToDatabase();
+    
+    const [offerCounts, requestCounts] = await Promise.all([
+      OfferPost.aggregate([
+        { $group: { _id: "$targetUniversity", count: { $sum: 1 } } }
+      ]),
+      RequestPost.aggregate([
+        { $group: { _id: "$targetUniversity", count: { $sum: 1 } } }
+      ])
+    ]);
 
+    const counts: Record<string, number> = {};
+
+    offerCounts.forEach((item: any) => {
+      if (item._id) counts[item._id] = (counts[item._id] || 0) + item.count;
+    });
+
+    requestCounts.forEach((item: any) => {
+      if (item._id) counts[item._id] = (counts[item._id] || 0) + item.count;
+    });
+
+    return counts;
+  } catch (error) {
+    console.error("Error fetching university counts:", error);
+    return {};
+  }
+}
 export async function updatePost(formData: FormData) {
   try {
     const session = await getServerSession(authOptions);
@@ -471,7 +543,11 @@ export async function updatePost(formData: FormData) {
     await connectToDatabase();
 
     const postId = formData.get("postId") as string;
-    const post = await Post.findById(postId);
+    let post = await OfferPost.findById(postId);
+    if (!post) {
+      post = await RequestPost.findById(postId);
+    }
+
     if (!post) {
       return { success: false, error: "Post not found" };
     }
@@ -502,6 +578,10 @@ export async function updatePost(formData: FormData) {
     if (type === "offer") {
       const newImages: string[] = [];
       const imageFiles = formData.getAll("images") as File[];
+      
+      // Parse existing images if they are being sent
+      const existingImagesStr = formData.get("existingImages") as string;
+      const baseImages = existingImagesStr ? JSON.parse(existingImagesStr) : (post.images || []);
 
       for (const imageFile of imageFiles) {
         if (imageFile && imageFile.size > 0) {
@@ -524,8 +604,8 @@ export async function updatePost(formData: FormData) {
         }
       }
 
-      // Append new images to existing ones, limit to 5 total
-      updateData.images = [...(post.images || []), ...newImages].slice(0, 5);
+      // Merge kept existing images with new uploads, limit to 5
+      updateData.images = [...baseImages, ...newImages].slice(0, 5);
     }
 
     if (type === "offer") {
@@ -629,13 +709,15 @@ export async function toggleSavePost(postId: string) {
       // Remove from user
       user.savedPosts = user.savedPosts?.filter((id: any) => id.toString() !== postId);
       // Remove from post
-      await Post.findByIdAndUpdate(postId, { $pull: { savedBy: userId } });
+      await OfferPost.findByIdAndUpdate(postId, { $pull: { savedBy: userId } });
+      await RequestPost.findByIdAndUpdate(postId, { $pull: { savedBy: userId } });
     } else {
       // Add to user
       if (!user.savedPosts) user.savedPosts = [];
       user.savedPosts.push(postIdObj);
       // Add to post
-      await Post.findByIdAndUpdate(postId, { $addToSet: { savedBy: userId } });
+      await OfferPost.findByIdAndUpdate(postId, { $addToSet: { savedBy: userId } });
+      await RequestPost.findByIdAndUpdate(postId, { $addToSet: { savedBy: userId } });
     }
 
     await user.save();
@@ -646,6 +728,43 @@ export async function toggleSavePost(postId: string) {
     return { success: true, saved: !isSaved };
   } catch (error: any) {
     console.error("Error toggling save:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function reportPost(postId: string, postType: 'offer' | 'request', reason: string) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any).id) {
+      return { success: false, error: "You must be logged in to report a post" };
+    }
+
+    await connectToDatabase();
+    
+    // Import Report model dynamically to avoid circular dependencies if any
+    const { Report } = await import("@/models/Report");
+
+    // Check if already reported by this user
+    const existingReport = await Report.findOne({
+      postId,
+      reportedBy: (session.user as any).id,
+      status: 'pending'
+    });
+
+    if (existingReport) {
+      return { success: false, error: "You have already reported this post. Our team is reviewing it." };
+    }
+
+    await Report.create({
+      postId,
+      postType,
+      reportedBy: (session.user as any).id,
+      reason,
+    });
+
+    return { success: true, message: "Report submitted successfully." };
+  } catch (error: any) {
+    console.error("Error reporting post:", error);
     return { success: false, error: error.message };
   }
 }

@@ -30,7 +30,7 @@ export default async function EditPostPage({ params }: PageProps) {
   }
 
   return (
-    <div className="pt-20">
+    <div className="bg-slate-950 min-h-screen">
       <CreatePostForm initialData={post} isEditing={true} />
     </div>
   );

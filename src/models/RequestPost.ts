@@ -19,6 +19,10 @@ export interface IRequestPost extends Document {
   address?: string;
   district?: string;
   postcode?: string;
+  viewCount?: number;
+  lastViewedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const RequestPostSchema: Schema<IRequestPost> = new Schema(
@@ -54,10 +58,12 @@ const RequestPostSchema: Schema<IRequestPost> = new Schema(
     district: { type: String, default: "" },
     postcode: { type: String, default: "" },
     savedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    viewCount: { type: Number, default: 0 },
+    lastViewedAt: { type: Date },
   },
-  { timestamps: true, collection: "posts" },
+  { timestamps: true, collection: "requests" },
 );
 
 export const RequestPost: Model<IRequestPost> =
-  mongoose.models.RequestPost ||
-  mongoose.model<IRequestPost>("RequestPost", RequestPostSchema);
+  mongoose.models.Request ||
+  mongoose.model<IRequestPost>("Request", RequestPostSchema);

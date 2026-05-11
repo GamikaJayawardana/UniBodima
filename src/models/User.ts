@@ -15,8 +15,8 @@ export interface IUser extends Document {
   postcode?: string;
   rating?: number;
   reviewCount?: number;
-  verificationStatus?: 'unverified' | 'email-verified' | 'phone-verified' | 'fully-verified';
   savedPosts?: mongoose.Types.ObjectId[];
+  role?: 'user' | 'admin' | 'super-admin';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,8 +37,8 @@ const UserSchema: Schema<IUser> = new Schema(
     postcode: { type: String },
     rating: { type: Number, min: 0, max: 5 },
     reviewCount: { type: Number, default: 0 },
-    verificationStatus: { type: String, enum: ['unverified', 'email-verified', 'phone-verified', 'fully-verified'], default: 'unverified' },
-    savedPosts: [{ type: Schema.Types.ObjectId, ref: 'Post' }]
+    savedPosts: [{ type: Schema.Types.ObjectId }],
+    role: { type: String, enum: ['user', 'admin', 'super-admin'], default: 'user' }
   },
   { timestamps: true }
 );

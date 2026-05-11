@@ -1,55 +1,83 @@
 @import "tailwindcss";
 
-:root {
-  --background: #FCFCFD;
-  --foreground: #0f172a;
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a; /* Slate 900 */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0284c7; /* Sky 600 */
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9; /* Slate 100 */
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b; /* Slate 500 */
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --border: #e2e8f0; /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #0284c7;
+  --radius: 1.5rem;
 }
 
 @layer base {
+  * {
+    border-color: var(--border);
+  }
   body {
-    @apply bg-background text-slate-500 antialiased selection:bg-blue-100 selection:text-blue-900;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-slate-900 font-semibold tracking-tight;
-  }
-}
-
-@layer utilities {
-  .glass-card {
-    @apply bg-white/70 backdrop-blur-xl border border-gray-100 shadow-sm transition-all duration-300;
-  }
-  
-  .glass-card:hover {
-    @apply shadow-md border-gray-200 bg-white/80 transform -translate-y-1;
-  }
-
-  .text-balance {
-    text-wrap: balance;
+    background-color: #ffffff;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
+/* Custom utilities for the Arvane Luxury Aesthetic */
+@utility arctic-card {
+  background-color: white;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 30px -4px rgba(0, 0, 0, 0.05);
+  border-radius: 2rem;
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
+@utility arctic-glass {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+@utility shadow-premium {
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+@utility shadow-3xl {
+  box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Selection */
+::selection {
+  background: #0284c7;
+  color: white;
 }

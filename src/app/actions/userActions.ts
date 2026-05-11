@@ -148,32 +148,40 @@ export async function getSavedPosts() {
 
     await connectToDatabase();
 
-    const user = await User.findOne({ email: session.user.email })
-      .populate({
-        path: 'savedPosts',
-        populate: {
-          path: 'author',
-          select: 'name image university'
-        }
-      })
-      .lean();
+    const user = await User.findOne({ email: session.user.email }).lean();
 
-    if (!user || !user.savedPosts) {
+    if (!user || !user.savedPosts || user.savedPosts.length === 0) {
       return { success: true, posts: [] };
     }
 
-    const transformedPosts = (user.savedPosts as any[]).map((p: any) => ({
+    const { OfferPost } = await import("@/models/OfferPost");
+    const { RequestPost } = await import("@/models/RequestPost");
+
+    const savedOfferPosts = await OfferPost.find({ _id: { $in: user.savedPosts } })
+      .populate('author', 'name image university')
+      .lean();
+
+    const savedRequestPosts = await RequestPost.find({ _id: { $in: user.savedPosts } })
+      .populate('author', 'name image university')
+      .lean();
+
+    const allSavedPosts = [...savedOfferPosts, ...savedRequestPosts];
+
+    const transformedPosts = allSavedPosts.map((p: any) => ({
       ...p,
       _id: p._id.toString(),
-      author: {
+      author: p.author ? {
         _id: p.author._id.toString(),
         name: p.author.name,
         image: p.author.image,
         university: p.author.university,
-      },
+      } : { name: "Unknown" },
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
     }));
+
+    // Sort by most recently saved (we'll just sort by createdAt for now)
+    transformedPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return {
       success: true,
@@ -182,5 +190,60 @@ export async function getSavedPosts() {
   } catch (error: any) {
     console.error("Error fetching saved posts:", error);
     return { success: false, error: error.message, posts: [] };
+  }
+}
+
+export async function changePassword(formData: FormData) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const currentPassword = formData.get("currentPassword") as string;
+    const newPassword = formData.get("newPassword") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return { success: false, error: "All fields are required" };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { success: false, error: "New passwords do not match" };
+    }
+
+    if (newPassword.length < 6) {
+      return { success: false, error: "New password must be at least 6 characters long" };
+    }
+
+    await connectToDatabase();
+    const user = await User.findOne({ email: session.user.email });
+
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    const bcrypt = await import("bcryptjs");
+
+    // Check if user has a password (they might have registered via OAuth)
+    if (!user.password) {
+      return { success: false, error: "Your account is linked to an external provider (e.g., Google). Password change is not applicable." };
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return { success: false, error: "Incorrect current password" };
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return { success: true, message: "Password updated successfully" };
+  } catch (error: any) {
+    console.error("Error changing password:", error);
+    return { success: false, error: error.message };
   }
 }

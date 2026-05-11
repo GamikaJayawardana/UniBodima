@@ -2,10 +2,12 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { searchAndFilterPosts } from "@/app/actions/postActions";
-import { Compass, X, Filter, Search, RotateCcw, Plus } from "lucide-react";
+import { Compass, X, Filter, Search, RotateCcw, Plus, Sparkles, SlidersHorizontal, MapPin, GraduationCap, ChevronDown } from "lucide-react";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Navbar from "@/components/Navbar";
+import { SRI_LANKA_DISTRICTS, UNIVERSITIES } from "@/lib/constants";
 
 interface FilterState {
   university?: string;
@@ -18,378 +20,314 @@ interface FilterState {
   hasAC?: boolean;
   hasFurnished?: boolean;
   hasParking?: boolean;
-  mealIncluded?: boolean;
-  rating?: number;
-  distanceMax?: number;
-  q?: string;
-  page: number;
-  limit: number;
+  sortBy?: string;
 }
 
-const SRI_LANKAN_UNIVERSITIES = [
-  "University of Colombo",
-  "University of Moratuwa",
-  "University of Kelaniya",
-  "University of Sri Jayewardenepura",
-  "University of Peradeniya",
-  "Open University of Sri Lanka",
-  "SLIIT",
-  "NSBM",
-  "IIT",
-];
 
-const SRI_LANKAN_DISTRICTS = [
-  "Colombo",
-  "Gampaha",
-  "Kalutara",
-  "Kandy",
-  "Matara",
-  "Galle",
-  "Jaffna",
-  "Mullaitivu",
-  "Vavuniya",
-  "Anuradhapura",
-  "Polonnaruwa",
-  "Kurunegala",
-  "Puttalam",
-  "Ratnapura",
-  "Kegalle",
-  "Nuwara Eliya",
-  "Badulla",
-  "Monaragala",
-  "Ampara",
-  "Batticaloa",
-  "Trincomalee",
-];
 
 function OffersContent() {
   const searchParams = useSearchParams();
-  const initialQ = searchParams.get("q") || undefined;
-
-  const [filters, setFilters] = useState<FilterState>({
-    page: 1,
-    limit: 12,
-    q: initialQ,
-  });
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 12,
-    pages: 1,
+  const [filters, setFilters] = useState<FilterState>({
+    university: searchParams.get("university") || "",
+    district: searchParams.get("district") || "",
+    genderPreference: "",
+    roomType: "",
+    sortBy: "newest",
+    priceMin: undefined,
+    priceMax: undefined,
+    hasWiFi: false,
+    hasAC: false,
+    hasFurnished: false,
+    hasParking: false,
   });
 
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+
   useEffect(() => {
-    const q = searchParams.get("q");
-    if (q !== filters.q) {
-      setFilters(prev => ({ ...prev, q: q || undefined, page: 1 }));
-    }
+    handleSearch();
   }, [searchParams]);
 
-  useEffect(() => {
-    async function loadPosts() {
-      setLoading(true);
-      const result = await searchAndFilterPosts({
-        type: "offer",
-        ...filters,
-      });
-      if (result.success) {
-        setPosts(result.posts);
-        setPagination(result.pagination);
-      }
-      setLoading(false);
+  async function handleSearch() {
+    setLoading(true);
+    const result = await searchAndFilterPosts({
+      type: "offer",
+      query: searchQuery,
+      ...filters,
+    });
+    if (result.success) {
+      setPosts(result.posts);
     }
-    loadPosts();
-  }, [filters]);
+    setLoading(false);
+  }
 
-  const handleFilterChange = (key: keyof FilterState, value: any) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-      page: 1, // Reset to first page on filter change
-    }));
-  };
-
-  const handleReset = () => {
-    setFilters({ page: 1, limit: 12 });
+  const clearFilters = () => {
+    setFilters({
+      university: "",
+      district: "",
+      genderPreference: "",
+      roomType: "",
+      sortBy: "newest",
+      priceMin: undefined,
+      priceMax: undefined,
+      hasWiFi: false,
+      hasAC: false,
+      hasFurnished: false,
+      hasParking: false,
+    });
+    setSearchQuery("");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 pt-24">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-10">
-          <div className="flex items-center gap-2 text-blue-600 font-bold text-sm uppercase tracking-wider mb-2">
-            <Compass className="w-4 h-4" />
-            <span>Marketplace</span>
+    <div className="min-h-screen bg-[#f8fafc] pt-32 pb-24">
+      <Navbar />
+      <div className="container mx-auto px-4">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="space-y-6">
+             <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-sky-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-sky-500/5 border border-slate-100">
+                <Compass className="w-4 h-4" />
+                <span>Marketplace Discovery</span>
+             </div>
+             <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
+                Explore <span className="text-sky-600">Offers.</span>
+             </h1>
+             <p className="text-xl text-slate-500 font-medium max-w-xl">
+                Browse through premium student accommodations verified for quality and security.
+             </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3">
-            Available Spaces
-          </h1>
-          <p className="text-slate-500 text-lg max-w-2xl font-medium">
-            Discover the perfect room or apartment tailored for student life in Sri Lanka. 
-          </p>
+          <div className="flex items-center gap-4">
+             <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all ${showFilters ? 'bg-sky-600 text-white shadow-xl shadow-sky-600/20' : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+             >
+                <SlidersHorizontal className="w-5 h-5" />
+                {showFilters ? 'Close Filters' : 'Filter Options'}
+             </button>
+             <Link href="/create" className="flex items-center gap-3 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10">
+                <Plus className="w-5 h-5" />
+                List Property
+             </Link>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-10 bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
-                showFilters 
-                  ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
-                  : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-              }`}
-            >
-              <Filter className="w-5 h-5" />
-              <span>{showFilters ? "Hide Filters" : "Show Filters"}</span>
-            </button>
-            
-            {filters.q && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm border border-blue-100">
-                <Search className="w-4 h-4" />
-                <span>Results for "{filters.q}"</span>
-                <button 
-                  onClick={() => handleFilterChange("q", undefined)}
-                  className="ml-2 hover:bg-blue-100 rounded-full p-0.5"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <Link
-            href="/create?type=offer"
-            className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3.5 rounded-xl font-black hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-          >
-            <Plus className="w-5 h-5" />
-            Post Your Space
-          </Link>
-        </div>
-
-        {/* Filters Panel */}
+        {/* Filter Drawer */}
         {showFilters && (
-          <div className="bg-white rounded-[32px] shadow-xl p-8 mb-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-300">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                  University
-                </label>
-                <select
-                  value={filters.university || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "university",
-                      e.target.value || undefined,
-                    )
-                  }
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"
-                >
-                  <option value="">All Universities</option>
-                  {SRI_LANKAN_UNIVERSITIES.map((uni) => (
-                    <option key={uni} value={uni}>
-                      {uni}
-                    </option>
-                  ))}
-                </select>
+          <div className="bg-white rounded-[40px] p-10 md:p-14 border border-slate-100 shadow-2xl mb-16 animate-in zoom-in-95 duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+              {/* Search */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Keywords</label>
+                <div className="relative">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                   <input
+                     type="text"
+                     placeholder="Search title, description..."
+                     className="w-full pl-12 pr-6 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                   />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                  Min Price (LKR)
-                </label>
-                <input
-                  type="number"
-                  value={filters.priceMin || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "priceMin",
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  placeholder="Min"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
-                />
+              {/* University */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target University</label>
+                <div className="relative">
+                   <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                   <select
+                     className="w-full pl-12 pr-10 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer"
+                     value={filters.university}
+                     onChange={(e) => setFilters({ ...filters, university: e.target.value })}
+                   >
+                     <option value="">All Universities</option>
+                     {UNIVERSITIES.map(uni => <option key={uni} value={uni}>{uni}</option>)}
+                   </select>
+                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                  Max Price (LKR)
-                </label>
-                <input
-                  type="number"
-                  value={filters.priceMax || ""}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "priceMax",
-                      e.target.value ? Number(e.target.value) : undefined,
-                    )
-                  }
-                  placeholder="Max"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold"
-                />
+              {/* District */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Location / District</label>
+                <div className="relative">
+                   <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                   <select
+                     className="w-full pl-12 pr-10 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer"
+                     value={filters.district}
+                     onChange={(e) => setFilters({ ...filters, district: e.target.value })}
+                   >
+                     <option value="">All Districts</option>
+                     {SRI_LANKA_DISTRICTS.map(dist => <option key={dist} value={dist}>{dist}</option>)}
+                   </select>
+                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
-                  Room Type
-                </label>
-                <select
-                  value={filters.roomType || ""}
-                  onChange={(e) =>
-                    handleFilterChange("roomType", e.target.value || undefined)
-                  }
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"
-                >
-                  <option value="">All Types</option>
-                  <option value="single">Single Room</option>
-                  <option value="shared">Shared Room</option>
-                  <option value="dorm">Dorm</option>
-                  <option value="apartment">Apartment</option>
-                </select>
+              {/* Gender */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Gender Preference</label>
+                <div className="grid grid-cols-3 gap-2">
+                   {["Any", "Male", "Female"].map(g => (
+                      <button 
+                        key={g} 
+                        onClick={() => setFilters({ ...filters, genderPreference: g === "Any" ? "" : g })}
+                        className={`py-4 rounded-2xl font-bold text-xs transition-all border ${filters.genderPreference === (g === "Any" ? "" : g) ? 'bg-sky-600 text-white border-sky-600 shadow-lg shadow-sky-600/20' : 'bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100'}`}
+                      >
+                        {g}
+                      </button>
+                   ))}
+                </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-slate-50 flex flex-wrap gap-4">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.hasWiFi || false}
-                  onChange={(e) =>
-                    handleFilterChange("hasWiFi", e.target.checked || undefined)
-                  }
-                  className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900">WiFi</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.hasAC || false}
-                  onChange={(e) =>
-                    handleFilterChange("hasAC", e.target.checked || undefined)
-                  }
-                  className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900">AC</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.hasFurnished || false}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "hasFurnished",
-                      e.target.checked || undefined,
-                    )
-                  }
-                  className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900">Furnished</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.hasParking || false}
-                  onChange={(e) =>
-                    handleFilterChange(
-                      "hasParking",
-                      e.target.checked || undefined,
-                    )
-                  }
-                  className="w-5 h-5 rounded-lg border-slate-200 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-bold text-slate-600 group-hover:text-slate-900">Parking</span>
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-10">
+              {/* Budget / Price Range */}
+              <div className="space-y-3">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price Range (LKR)</label>
+                 <div className="flex items-center gap-4">
+                    <input
+                      type="number"
+                      placeholder="Min Price"
+                      className="w-full px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                      value={filters.priceMin || ""}
+                      onChange={(e) => setFilters({ ...filters, priceMin: e.target.value ? Number(e.target.value) : undefined })}
+                    />
+                    <span className="text-slate-400 font-bold">-</span>
+                    <input
+                      type="number"
+                      placeholder="Max Price"
+                      className="w-full px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 placeholder:text-slate-400"
+                      value={filters.priceMax || ""}
+                      onChange={(e) => setFilters({ ...filters, priceMax: e.target.value ? Number(e.target.value) : undefined })}
+                    />
+                 </div>
+              </div>
+
+              {/* Sorting */}
+              <div className="space-y-3">
+                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sort By</label>
+                 <div className="relative">
+                   <select
+                     className="w-full pl-6 pr-10 py-4 bg-slate-50 rounded-2xl border border-slate-100 focus:outline-none focus:border-sky-500 focus:bg-white transition-all font-bold text-slate-900 appearance-none cursor-pointer"
+                     value={filters.sortBy || "newest"}
+                     onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                   >
+                     <option value="newest">Newest First</option>
+                     <option value="price_asc">Price: Low to High</option>
+                     <option value="price_desc">Price: High to Low</option>
+                     <option value="distance_asc">Closest to University</option>
+                   </select>
+                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                 </div>
+              </div>
             </div>
 
-            <div className="mt-10 flex justify-end">
-              <button
-                onClick={handleReset}
-                className="flex items-center gap-2 px-8 py-3.5 bg-slate-100 text-slate-600 rounded-xl font-black hover:bg-slate-200 transition-all hover:text-slate-900"
-              >
-                <RotateCcw className="w-4.5 h-4.5" />
-                Reset All Filters
-              </button>
+            <div className="mt-12 pt-10 border-t border-slate-50 flex flex-wrap items-center justify-between gap-6">
+               <div className="flex flex-wrap items-center gap-6">
+                  <div className="flex items-center gap-3">
+                     <input 
+                        type="checkbox" 
+                        id="wifi" 
+                        className="w-5 h-5 rounded-lg border-slate-300 text-sky-600 focus:ring-sky-500"
+                        checked={filters.hasWiFi || false}
+                        onChange={(e) => setFilters({...filters, hasWiFi: e.target.checked})}
+                     />
+                     <label htmlFor="wifi" className="text-sm font-bold text-slate-600">Free Wi-Fi</label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <input 
+                        type="checkbox" 
+                        id="ac" 
+                        className="w-5 h-5 rounded-lg border-slate-300 text-sky-600 focus:ring-sky-500"
+                        checked={filters.hasAC || false}
+                        onChange={(e) => setFilters({...filters, hasAC: e.target.checked})}
+                     />
+                     <label htmlFor="ac" className="text-sm font-bold text-slate-600">Air Conditioning</label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <input 
+                        type="checkbox" 
+                        id="furnished" 
+                        className="w-5 h-5 rounded-lg border-slate-300 text-sky-600 focus:ring-sky-500"
+                        checked={filters.hasFurnished || false}
+                        onChange={(e) => setFilters({...filters, hasFurnished: e.target.checked})}
+                     />
+                     <label htmlFor="furnished" className="text-sm font-bold text-slate-600">Furnished</label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <input 
+                        type="checkbox" 
+                        id="parking" 
+                        className="w-5 h-5 rounded-lg border-slate-300 text-sky-600 focus:ring-sky-500"
+                        checked={filters.hasParking || false}
+                        onChange={(e) => setFilters({...filters, hasParking: e.target.checked})}
+                     />
+                     <label htmlFor="parking" className="text-sm font-bold text-slate-600">Parking</label>
+                  </div>
+               </div>
+               
+               <div className="flex items-center gap-4">
+                  <button 
+                    onClick={clearFilters}
+                    className="flex items-center gap-2 px-6 py-3 text-slate-400 hover:text-slate-600 font-bold transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                  </button>
+                  <button 
+                    onClick={handleSearch}
+                    className="px-10 py-4 bg-sky-600 text-white rounded-2xl font-black shadow-xl shadow-sky-600/20 hover:bg-sky-700 transition-all"
+                  >
+                    Apply Filters
+                  </button>
+               </div>
             </div>
           </div>
         )}
 
-        {/* Posts Grid */}
+        {/* Results Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="h-80 bg-white rounded-3xl border border-slate-100 animate-pulse" />
-            ))}
+          <div className="flex flex-col items-center justify-center py-40 animate-pulse">
+            <div className="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 mb-6">
+               <Compass className="w-8 h-8 animate-spin" />
+            </div>
+            <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-xs">Scanning Marketplace...</p>
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[40px] border border-slate-100 shadow-sm">
-             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-10 h-10 text-slate-200" />
-             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-2">No results found</h2>
-            <p className="text-slate-400 mb-8 max-w-sm mx-auto font-medium">
-              We couldn't find any spaces matching your current filters. Try resetting or adjusting them.
-            </p>
-            <button
-              onClick={handleReset}
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all"
-            >
-              Reset Filters
-            </button>
+          <div className="bg-white rounded-[48px] p-24 text-center border border-slate-100 shadow-2xl animate-in fade-in duration-700">
+            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
+               <Search className="w-10 h-10 text-slate-300" />
+            </div>
+            <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter">No offers found.</h3>
+            <p className="text-slate-500 text-xl font-medium mb-12 max-w-lg mx-auto">We couldn't find any listings matching your current filter criteria. Try expanding your search area.</p>
+            <button onClick={clearFilters} className="px-12 py-5 bg-sky-600 text-white rounded-[24px] font-black text-lg hover:bg-sky-700 transition-all shadow-xl shadow-sky-600/20">Clear All Search Data</button>
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12">
-              {posts.map((post) => (
-                <div key={post._id} className="hover:-translate-y-1 transition-transform duration-300">
-                  <Link href={`/posts/${post._id}`}>
-                    <PostCard
-                      id={post._id}
-                      type={post.type}
-                      title={post.title}
-                      price={post.price}
-                      budgetRange={post.budgetRange}
-                      location={post.address}
-                      targetUniversity={post.targetUniversity}
-                      genderPreference={post.genderPreference}
-                      imageUrl={post.images?.[0]}
-                      createdAt={post.createdAt}
-                      authorName={post.author?.name || "Unknown"}
-                    />
-                  </Link>
-                </div>
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {pagination.pages > 1 && (
-              <div className="flex justify-center items-center gap-3 mb-12">
-                {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => handleFilterChange("page", page)}
-                      className={`w-12 h-12 rounded-xl font-black transition-all ${
-                        filters.page === page
-                          ? "bg-blue-600 text-white shadow-lg shadow-blue-100"
-                          : "bg-white text-slate-600 border border-slate-200 hover:border-blue-400 hover:text-blue-600"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
-              </div>
-            )}
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {posts.map((post) => (
+              <PostCard
+                key={post._id}
+                id={post._id}
+                type={post.type}
+                title={post.title}
+                price={post.price}
+                district={post.district}
+                targetUniversity={post.targetUniversity}
+                genderPreference={post.genderPreference}
+                imageUrl={post.images?.[0]}
+                createdAt={post.createdAt}
+                authorName={post.author?.name || "Verified Member"}
+                authorRole={post.author?.role}
+                roomType={post.roomType}
+                occupancy={post.occupancy}
+                distanceToUni={post.distanceToUni}
+              />
+            ))}
+          </div>
         )}
-
-        <div className="text-center text-slate-400 text-sm mt-12 font-bold tracking-tight uppercase">
-          Showing {posts.length} of {pagination.total} spaces available
-        </div>
       </div>
     </div>
   );
@@ -397,11 +335,7 @@ function OffersContent() {
 
 export default function OffersPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    }>
+    <Suspense fallback={<div>Loading...</div>}>
       <OffersContent />
     </Suspense>
   );
