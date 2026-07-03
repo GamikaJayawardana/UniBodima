@@ -29,7 +29,7 @@ export default async function AdminDashboardPage() {
           <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter mb-2">
             System <span className="text-sky-600">Overview</span>
           </h1>
-          <p className="text-slate-500 font-medium">Real-time metrics for the UniBoarding.com platform.</p>
+          <p className="text-slate-500 font-medium">Real-time metrics for the BoardingFor.me platform.</p>
         </div>
         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-600 font-bold text-sm">
            <Activity className="w-4 h-4 animate-pulse" />
@@ -67,7 +67,7 @@ export default async function AdminDashboardPage() {
       <div className="bg-white rounded-3xl p-10 border border-slate-100 shadow-sm">
         <h2 className="text-2xl font-black text-slate-900 mb-6">Quick Actions</h2>
         <p className="text-slate-500 mb-8 max-w-2xl leading-relaxed">
-          Welcome to the UniBoarding.com administration console. Use the sidebar to navigate between user management and post moderation.
+          Welcome to the BoardingFor.me administration console. Use the sidebar to navigate between user management and post moderation.
           Any deletions made here are permanent and directly affect the live database.
         </p>
         <div className="grid md:grid-cols-2 gap-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, X, LogOut, User, LayoutDashboard, Sparkles, Heart } from "lucide-react";
+import { Menu, X, LogOut, User, LayoutDashboard, Sparkles, Heart, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -46,7 +46,7 @@ export default function Navbar() {
         <div className="container mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            <img src="/UniBoarding-black.png" alt="UniBoarding Logo" className="h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
+            <img src="/UniBoarding-black.png" alt="BoardingFor.me Logo" className="h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-105" />
           </Link>
 
           {/* Minimal Nav Links */}
@@ -126,6 +126,16 @@ export default function Navbar() {
                       <Heart className="w-4 h-4" />
                       <span className="font-bold text-[13px]">Saved Posts</span>
                     </Link>
+                    {((session.user as any)?.role === "admin" ||
+                      (session.user as any)?.role === "super-admin") && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-3 px-5 py-3 text-slate-600 hover:bg-slate-50 hover:text-sky-600 transition-colors"
+                      >
+                        <Shield className="w-4 h-4" />
+                        <span className="font-bold text-[13px]">Admin Panel</span>
+                      </Link>
+                    )}
                     <div className="h-px bg-slate-50 my-1"></div>
                     <button
                       onClick={() => signOut({ callbackUrl: "/" })}
@@ -176,7 +186,7 @@ export default function Navbar() {
           <div className="absolute right-0 top-0 h-full w-[300px] bg-white shadow-2xl animate-in slide-in-from-right duration-500">
             <div className="p-8 flex flex-col h-full">
               <div className="flex items-center justify-between mb-12">
-                <img src="/UniBoarding-black.png" alt="UniBoarding Logo" className="h-8 w-auto object-contain" />
+                <img src="/UniBoarding-black.png" alt="BoardingFor.me Logo" className="h-8 w-auto object-contain" />
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2 text-slate-400"

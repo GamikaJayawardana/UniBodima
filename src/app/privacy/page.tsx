@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - UniBoarding.com Sri Lanka",
+  title: "Privacy Policy - BoardingFor.me Sri Lanka",
   description:
-    "Privacy policy for UniBoarding.com. Discover how we protect the data and privacy of university students searching for boarding places in Sri Lanka.",
+    "Privacy policy for BoardingFor.me. Discover how we protect the data and privacy of university students searching for boarding places in Sri Lanka.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
 
           <h2>1. Information We Collect</h2>
           <p>
-            At UniBoarding.com, we are committed to protecting the privacy and
+            At BoardingFor.me, we are committed to protecting the privacy and
             security of the university students and landlords in Sri Lanka who
             use our platform to find or list student housing. We collect
             personal information such as your name, university affiliation,

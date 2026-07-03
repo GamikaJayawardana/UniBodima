@@ -215,7 +215,7 @@ export async function getPostById(postId: string) {
     await connectToDatabase();
 
     // Try finding in offers first
-    let post = await OfferPost.findById(postId)
+    let post: any = await OfferPost.findById(postId)
       .populate('author', 'name image email phoneNumber university district bio rating reviewCount role')
       .lean();
     
@@ -260,6 +260,46 @@ export async function getPostById(postId: string) {
     };
   } catch (error: any) {
     console.error("Error fetching post:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Read-only fetch used for server-side metadata / SEO. Unlike getPostById it
+// does NOT increment the view count, so it is safe to call during rendering.
+export async function getPostSeo(postId: string) {
+  try {
+    if (!postId || !/^[0-9a-fA-F]{24}$/.test(postId)) {
+      return { success: false, error: "Invalid id" };
+    }
+    await connectToDatabase();
+
+    let post: any = await OfferPost.findById(postId)
+      .populate("author", "name image")
+      .lean();
+    if (!post) {
+      post = await RequestPost.findById(postId).populate("author", "name image").lean();
+    }
+    if (!post) {
+      return { success: false, error: "Post not found" };
+    }
+
+    const transformed = {
+      ...post,
+      _id: post._id.toString(),
+      author: post.author
+        ? {
+            _id: post.author._id?.toString() || "unknown",
+            name: post.author.name || "Unknown",
+            image: post.author.image || "",
+          }
+        : { name: "Unknown", _id: "unknown" },
+      createdAt: post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: post.updatedAt ? new Date(post.updatedAt).toISOString() : new Date().toISOString(),
+    };
+
+    return { success: true, post: JSON.parse(JSON.stringify(transformed)) };
+  } catch (error: any) {
+    console.error("Error fetching post SEO data:", error);
     return { success: false, error: error.message };
   }
 }
@@ -351,7 +391,7 @@ export async function searchAndFilterPosts(filters: {
     }
 
     const skip = (page - 1) * limit;
-    const model = type === 'offer' ? OfferPost : RequestPost;
+    const model: any = type === 'offer' ? OfferPost : RequestPost;
 
     let sortQuery: any = { createdAt: -1 };
     if (sortBy === 'price_asc') sortQuery = type === 'offer' ? { price: 1 } : { 'budgetRange.min': 1 };
@@ -474,7 +514,7 @@ export async function deletePost(postId: string) {
 
     await connectToDatabase();
     
-    let post = await OfferPost.findById(postId);
+    let post: any = await OfferPost.findById(postId);
     if (!post) {
       post = await RequestPost.findById(postId);
     }
@@ -483,7 +523,9 @@ export async function deletePost(postId: string) {
       return { success: false, error: "Post not found" };
     }
 
-    if (post.author.toString() !== (session.user as any).id) {
+    const delRole = (session.user as any).role;
+    const isDelAdmin = delRole === "admin" || delRole === "super-admin";
+    if (post.author.toString() !== (session.user as any).id && !isDelAdmin) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -543,7 +585,7 @@ export async function updatePost(formData: FormData) {
     await connectToDatabase();
 
     const postId = formData.get("postId") as string;
-    let post = await OfferPost.findById(postId);
+    let post: any = await OfferPost.findById(postId);
     if (!post) {
       post = await RequestPost.findById(postId);
     }
@@ -552,7 +594,9 @@ export async function updatePost(formData: FormData) {
       return { success: false, error: "Post not found" };
     }
 
-    if (post.author.toString() !== (session.user as any).id) {
+    const updRole = (session.user as any).role;
+    const isUpdAdmin = updRole === "admin" || updRole === "super-admin";
+    if (post.author.toString() !== (session.user as any).id && !isUpdAdmin) {
       return { success: false, error: "Unauthorized" };
     }
 

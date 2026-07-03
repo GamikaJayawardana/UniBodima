@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - UniBoarding.com Student Housing",
+  title: "Terms of Service - BoardingFor.me Student Housing",
   description:
-    "Terms and conditions for using UniBoarding.com, the leading marketplace for university boarding places and student accommodations in Sri Lanka.",
+    "Terms and conditions for using BoardingFor.me, the leading marketplace for university boarding places and student accommodations in Sri Lanka.",
 };
 
 export default function TermsOfServicePage() {
@@ -18,7 +18,7 @@ export default function TermsOfServicePage() {
 
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing and using UniBoarding.com, you accept and agree to be bound
+            By accessing and using BoardingFor.me, you accept and agree to be bound
             by these Terms of Service. If you do not agree to these terms, you
             must not use our platform to search for or list boarding places in
             Sri Lanka.
@@ -45,14 +45,14 @@ export default function TermsOfServicePage() {
           <h2>3. Listing Rules</h2>
           <p>
             Landlords must ensure their properties meet basic safety and
-            habitability standards. UniBoarding.com reserves the right to remove any
+            habitability standards. BoardingFor.me reserves the right to remove any
             listing that violates our Safety First guidelines or receives
             multiple credible complaints from students.
           </p>
 
           <h2>4. Limitation of Liability</h2>
           <p>
-            UniBoarding.com acts as a connection platform. While we enforce strict
+            BoardingFor.me acts as a connection platform. While we enforce strict
             verification, we are not liable for disputes arising directly
             between students and landlords regarding lease agreements or
             property conditions.

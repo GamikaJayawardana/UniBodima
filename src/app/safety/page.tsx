@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import { ShieldCheck, UserCheck, Key, HomeIcon, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Safety First - UniBoarding.com Student Housing Sri Lanka",
-  description: "Learn how UniBoarding.com keeps Sri Lankan university students safe while searching for boarding places, apartments, and annexes near universities.",
+  title: "Safety First - BoardingFor.me Student Housing Sri Lanka",
+  description: "Learn how BoardingFor.me keeps Sri Lankan university students safe while searching for boarding places, apartments, and annexes near universities.",
 };
 
 export default function SafetyPage() {
@@ -40,7 +40,7 @@ export default function SafetyPage() {
             {
               icon: Key,
               title: "Secure Communication",
-              description: "Chat securely within UniBoarding.com without exposing your personal phone number until you are ready to visit the property.",
+              description: "Chat securely within BoardingFor.me without exposing your personal phone number until you are ready to visit the property.",
               color: "text-indigo-600",
               bg: "bg-indigo-50"
             },

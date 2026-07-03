@@ -54,7 +54,7 @@ function OffersContent() {
     setLoading(true);
     const result = await searchAndFilterPosts({
       type: "offer",
-      query: searchQuery,
+      q: searchQuery,
       ...filters,
     });
     if (result.success) {
@@ -86,20 +86,20 @@ function OffersContent() {
       <div className="container mx-auto px-4">
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="space-y-6">
+        <div className="flex flex-col items-center text-center md:text-left md:flex-row md:items-end justify-between gap-8 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="space-y-6 flex flex-col items-center md:items-start">
              <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-sky-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-sky-500/5 border border-slate-100">
                 <Compass className="w-4 h-4" />
                 <span>Marketplace Discovery</span>
              </div>
-             <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
+             <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
                 Explore <span className="text-sky-600">Offers.</span>
              </h1>
              <p className="text-xl text-slate-500 font-medium max-w-xl">
                 Browse through premium student accommodations verified for quality and security.
              </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
              <button 
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all ${showFilters ? 'bg-sky-600 text-white shadow-xl shadow-sky-600/20' : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-sm'}`}

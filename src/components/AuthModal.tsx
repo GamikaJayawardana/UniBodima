@@ -160,9 +160,9 @@ export default function AuthModal() {
           </div>
 
           <div className="relative z-10 flex flex-col items-center">
-            <img src="/UniBoarding-black.png" alt="UniBoarding Logo" className="h-12 w-auto object-contain mb-4" />
+            <img src="/UniBoarding-black.png" alt="BoardingFor.me Logo" className="h-12 w-auto object-contain mb-4" />
             <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-2">
-              {authMode === "login" ? "Welcome Back" : "Join UniBoarding.com"}
+              {authMode === "login" ? "Welcome Back" : "Join BoardingFor.me"}
             </h2>
             <p className="text-sm font-medium text-slate-500 mt-2">
               {authMode === "login"
@@ -183,15 +183,15 @@ export default function AuthModal() {
           {authMode === "login" ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className={labelClass}>Email Address</label>
+                <label className={labelClass}>Email or Username</label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder="you@example.com or username"
                     className={inputClass}
                   />
                 </div>

@@ -64,7 +64,7 @@ export default function AdminUsersPage() {
             <Users className="w-10 h-10 text-indigo-600" />
             User Management
           </h1>
-          <p className="text-slate-500 font-medium">View and manage all registered accounts on UniBoarding.com.</p>
+          <p className="text-slate-500 font-medium">View and manage all registered accounts on BoardingFor.me.</p>
         </div>
         <div className="px-6 py-3 bg-white rounded-full border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
           Total Users: <span className="text-indigo-600">{users.length}</span>

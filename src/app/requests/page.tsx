@@ -29,8 +29,6 @@ interface FilterState {
   roomType?: string;
   district?: string;
   sortBy?: string;
-  priceMin?: number;
-  priceMax?: number;
 }
 
 
@@ -60,7 +58,7 @@ function RequestsContent() {
     setLoading(true);
     const result = await searchAndFilterPosts({
       type: "request",
-      query: searchQuery,
+      q: searchQuery,
       ...filters,
     });
     if (result.success) {
@@ -87,13 +85,13 @@ function RequestsContent() {
       <Navbar />
       <div className="container mx-auto px-4">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="space-y-6">
+        <div className="flex flex-col items-center text-center md:text-left md:flex-row md:items-end justify-between gap-8 mb-16 animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="space-y-6 flex flex-col items-center md:items-start">
             <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/5 border border-slate-100">
               <Users className="w-4 h-4" />
               <span>Student Community Hub</span>
             </div>
-            <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none">
               Housing{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-sky-400">
                 Requests.
@@ -104,7 +102,7 @@ function RequestsContent() {
               directly and find your perfect roommate.
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all ${showFilters ? "bg-emerald-600 text-white shadow-xl shadow-emerald-600/20" : "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-sm"}`}

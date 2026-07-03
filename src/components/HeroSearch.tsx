@@ -86,11 +86,11 @@ export default function HeroSearch() {
   };
 
   return (
-    <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[95%] lg:w-[92%] bg-white rounded-[32px] shadow-2xl p-4 md:p-6 lg:p-4 border border-slate-100 animate-in slide-in-from-bottom-8 duration-1000 delay-300 z-50">
-      <div className="flex flex-col lg:flex-row items-center">
-        
+    <div className="relative mt-6 w-full lg:absolute lg:-bottom-12 lg:left-1/2 lg:-translate-x-1/2 lg:mt-0 lg:w-[92%] bg-white rounded-[28px] lg:rounded-[32px] shadow-2xl p-3 md:p-6 lg:p-4 border border-slate-100 animate-in slide-in-from-bottom-8 duration-1000 delay-300 z-50">
+      <div className="flex flex-col lg:flex-row lg:items-center divide-y divide-slate-100 lg:divide-y-0">
+
         {/* Location Input */}
-        <div className="w-full lg:w-[28%] space-y-1.5 px-6 group">
+        <div className="w-full lg:w-[28%] space-y-1.5 px-4 lg:px-6 py-3 lg:py-0 group">
           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block group-hover:text-sky-600 transition-colors">University / Area</label>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-sky-500 shrink-0" />
@@ -107,9 +107,9 @@ export default function HeroSearch() {
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
 
         {/* Custom Dropdowns */}
-        <div className="w-full lg:w-[17%]">
-          <CustomDropdown 
-            label="Property Type" 
+        <div className="w-full lg:w-[17%] py-3 lg:py-0">
+          <CustomDropdown
+            label="Property Type"
             icon={Building2}
             value={type}
             onChange={setType}
@@ -119,9 +119,9 @@ export default function HeroSearch() {
 
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
 
-        <div className="w-full lg:w-[17%]">
-          <CustomDropdown 
-            label="Budget Cap" 
+        <div className="w-full lg:w-[17%] py-3 lg:py-0">
+          <CustomDropdown
+            label="Budget Cap"
             icon={Wallet}
             value={budget}
             onChange={setBudget}
@@ -131,9 +131,9 @@ export default function HeroSearch() {
 
         <div className="hidden lg:block w-px h-10 bg-slate-100"></div>
 
-        <div className="w-full lg:w-[15%]">
-          <CustomDropdown 
-            label="Gender" 
+        <div className="w-full lg:w-[15%] py-3 lg:py-0">
+          <CustomDropdown
+            label="Gender"
             icon={Users}
             value={gender}
             onChange={setGender}
@@ -142,7 +142,7 @@ export default function HeroSearch() {
         </div>
 
         {/* Search Button */}
-        <div className="w-full lg:w-[23%] lg:pl-4 mt-4 lg:mt-0">
+        <div className="w-full lg:w-[23%] lg:pl-4 pt-4 lg:pt-0">
           <button 
             onClick={handleSearch}
             className="w-full bg-slate-900 text-white rounded-[24px] py-5 flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/20 active:translate-y-1 group"

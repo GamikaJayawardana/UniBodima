@@ -24,8 +24,10 @@ export default async function EditPostPage({ params }: PageProps) {
 
   const post = result.post;
 
-  // Check if the current user is the author
-  if (post.author._id.toString() !== (session.user as any).id) {
+  // Allow the author, or any admin / super-admin, to edit the listing.
+  const role = (session.user as any).role;
+  const isAdmin = role === "admin" || role === "super-admin";
+  if (post.author._id.toString() !== (session.user as any).id && !isAdmin) {
     redirect("/");
   }
 

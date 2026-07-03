@@ -47,7 +47,7 @@ export async function generateMetadata({
   if (!uni) return { title: "Not Found" };
 
   return {
-    title: `Boarding Places & Apartments near ${uni.name} | UniBoarding.com`,
+    title: `Boarding Places & Apartments near ${uni.name} | BoardingFor.me`,
     description: `Find the best and most affordable student housing, boarding places, and apartments near ${uni.name}, located in ${uni.location}, Sri Lanka. Verified safe student accommodations.`,
     keywords: [
       `Bodima near ${uni.name}`,

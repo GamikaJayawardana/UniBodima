@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -25,6 +25,7 @@ interface User {
   reviewCount?: number;
   image?: string;
   verificationStatus?: string;
+  role?: string;
 }
 
 function ProfileStat({ label, value, icon: Icon, colorClass }: { label: string, value: string, icon: any, colorClass: string }) {
@@ -41,7 +42,7 @@ function ProfileStat({ label, value, icon: Icon, colorClass }: { label: string, 
   );
 }
 
-export default function ProfilePage() {
+function ProfileContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -148,7 +149,6 @@ export default function ProfilePage() {
                       <Star className="w-6 h-6 text-amber-400 fill-amber-400" />
                       <span className="font-black text-xl text-slate-900">{user.rating?.toFixed(1) || "5.0"}</span>
                       <span className="text-slate-400 text-sm font-bold">({user.reviewCount || 0} Reviews)</span>
-                   </div>
                    </div>
                 </div>
               </div>
@@ -267,5 +267,19 @@ export default function ProfilePage() {
 
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+          <Loader2 className="w-12 h-12 text-sky-500 animate-spin" />
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }

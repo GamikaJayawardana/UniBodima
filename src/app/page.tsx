@@ -52,7 +52,7 @@ export default async function Home() {
       <Navbar />
 
       {/* Hero Section - Full Screen High-Impact Design */}
-      <section className="h-screen min-h-[850px] flex flex-col pt-35 pb-25 relative overflow-hidden bg-white">
+      <section className="min-h-screen flex flex-col justify-center pt-32 pb-20 relative overflow-hidden bg-white">
         {/* Architectural Background Grid */}
         <div
           className="absolute inset-0 z-0 opacity-[0.03]"
@@ -62,11 +62,11 @@ export default async function Home() {
           }}
         ></div>
 
-        <div className="container mx-auto px-6 h-full flex flex-col justify-center gap-12 lg:gap-16 relative z-10">
+        <div className="container mx-auto px-6 flex flex-col gap-8 lg:gap-10 relative z-10">
           {/* Hero Header Area */}
-          <div className="flex flex-col lg:flex-row justify-between items-end">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 lg:gap-6">
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl lg:text-9xl font-black tracking-tighter leading-[0.85] text-slate-900">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-black tracking-tighter leading-[0.9] text-slate-900">
                 Smart Student Housing
                 <br />
                 for
@@ -77,7 +77,7 @@ export default async function Home() {
             </div>
             <div className="lg:pl-20 space-y-5 pb-2">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                © 2026 UNIBOARDING.COM. THE ULTIMATE HUB.
+                © 2026 BOARDINGFOR.ME. THE ULTIMATE HUB.
               </p>
               <p className="text-lg text-slate-500 font-medium leading-relaxed max-w-sm italic">
                 Connecting university students with verified boarding places and
@@ -86,9 +86,9 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* Hero Image - Optimized for Screen Height */}
-          <div className="relative h-[45%] lg:h-[50%]">
-            <div className="w-full h-full rounded-[40px] overflow-hidden shadow-3xl relative group border-[12px] border-slate-50">
+          {/* Hero Image */}
+          <div className="relative">
+            <div className="w-full h-[240px] sm:h-[360px] lg:h-[46vh] xl:h-[50vh] lg:max-h-[560px] rounded-[32px] lg:rounded-[40px] overflow-hidden shadow-3xl relative group border-[8px] lg:border-[12px] border-slate-50">
               <img
                 src="heroimage.avif"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
@@ -114,7 +114,7 @@ export default async function Home() {
       </section>
 
       {/* About Us Section - Full Screen High-Impact UI */}
-      <section className="h-screen bg-white relative overflow-hidden flex flex-col justify-center pt-20">
+      <section className="min-h-screen bg-white relative overflow-hidden flex flex-col justify-center py-24">
         <div className="absolute top-0 right-0 w-1/3 h-full bg-slate-50/50 -skew-x-12 translate-x-20 z-0"></div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -124,7 +124,7 @@ export default async function Home() {
                 <div className="w-10 h-px bg-sky-600"></div>
                 Our Mission
               </div>
-              <h2 className="text-6xl md:text-7xl font-black tracking-tighter text-slate-900 leading-[0.9]">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-slate-900 leading-[0.9]">
                 Redefining the <br />
                 Student Housing <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-sky-400">
@@ -132,7 +132,7 @@ export default async function Home() {
                 </span>
               </h2>
               <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl">
-                UniBoarding.com was born from a simple observation: finding a safe,
+                BoardingFor.me was born from a simple observation: finding a safe,
                 affordable place to stay as a student shouldn't be a full-time
                 job. We've built the infrastructure to make it instant.
               </p>
@@ -168,7 +168,7 @@ export default async function Home() {
                       {stat.detail}
                     </p>
                   </div>
-                  <p className="text-7xl md:text-8xl font-black tracking-tighter text-slate-900 group-hover:scale-105 transition-transform duration-500 origin-right">
+                  <p className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-slate-900 group-hover:scale-105 transition-transform duration-500 origin-right">
                     {stat.value}
                   </p>
                 </div>
@@ -182,9 +182,9 @@ export default async function Home() {
       <UniversityGrid />
 
       {/* Latest Housing Offers Section */}
-      <section className="py-40 bg-slate-50">
+      <section className="py-20 md:py-40 bg-slate-50">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col lg:flex-row justify-between items-end gap-10 mb-20">
+          <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end justify-between gap-10 mb-20">
             <div className="space-y-6">
               <h2 className="text-6xl font-black tracking-tight text-slate-900">
                 Latest Housing{" "}
@@ -192,7 +192,7 @@ export default async function Home() {
                   Offers
                 </span>
               </h2>
-              <p className="text-slate-500 text-lg font-medium max-w-xl">
+              <p className="text-slate-500 text-lg font-medium max-w-xl mx-auto lg:mx-0">
                 Explore the newest boarding places and student apartments.
                 Verified for safety and comfort.
               </p>
@@ -230,9 +230,9 @@ export default async function Home() {
       </section>
 
       {/* Latest Housing Requests Section */}
-      <section className="py-40 bg-white">
-        <div className="container mx-auto px-6 border-t border-slate-100 pt-40">
-          <div className="flex flex-col lg:flex-row justify-between items-end gap-10 mb-20">
+      <section className="py-20 md:py-40 bg-white">
+        <div className="container mx-auto px-6 border-t border-slate-100 pt-20 md:pt-40">
+          <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end justify-between gap-10 mb-20">
             <div className="space-y-6">
               <h2 className="text-6xl font-black tracking-tight text-slate-900">
                 Latest Housing{" "}
@@ -240,7 +240,7 @@ export default async function Home() {
                   Requests
                 </span>
               </h2>
-              <p className="text-slate-500 text-lg font-medium max-w-xl">
+              <p className="text-slate-500 text-lg font-medium max-w-xl mx-auto lg:mx-0">
                 Students looking for roommates or boarding places. Help them
                 find their perfect home near campus.
               </p>
@@ -278,9 +278,9 @@ export default async function Home() {
       </section>
 
       {/* How it Works Section */}
-      <section className="py-40 bg-white">
+      <section className="py-20 md:py-40 bg-white">
         <div className="container mx-auto px-6">
-          <div className="max-w-2xl space-y-6 mb-15">
+          <div className="max-w-2xl space-y-6 mb-15 text-center lg:text-left mx-auto lg:mx-0">
             <h2 className="text-6xl font-black tracking-tight text-slate-900">
               How it{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-sky-400">
@@ -288,7 +288,7 @@ export default async function Home() {
               </span>
             </h2>
             <p className="text-slate-500 text-lg font-medium leading-relaxed">
-              At UniBoarding.com, we make finding student housing simple. No more
+              At BoardingFor.me, we make finding student housing simple. No more
               wandering around campus streets looking for "Boarding" signs.
             </p>
           </div>
@@ -322,7 +322,7 @@ export default async function Home() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-white p-12 space-y-10 hover:bg-slate-50 transition-colors group"
+                className="bg-white p-8 md:p-12 space-y-10 hover:bg-slate-50 transition-colors group"
               >
                 <div className="flex justify-between items-start">
                   <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-900 group-hover:bg-white group-hover:shadow-xl transition-all">
@@ -370,7 +370,7 @@ export default async function Home() {
             </h2>
             <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
               Join thousands of university students who have already simplified
-              their campus living experience with UniBoarding.com.
+              their campus living experience with BoardingFor.me.
             </p>
             <div className="flex flex-wrap justify-center gap-6 pt-4">
               <Link

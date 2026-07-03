@@ -14,16 +14,24 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Please enter an email and password");
+          throw new Error("Please enter your email/username and password");
         }
-        
+
         await connectToDatabase();
-        const user = await User.findOne({ email: credentials.email });
+
+        // Allow sign-in with either an email address or a username.
+        const identifier = credentials.email.trim();
+        const user = await User.findOne({
+          $or: [
+            { email: identifier.toLowerCase() },
+            { username: identifier },
+          ],
+        });
 
         if (!user || !user.password) {
           throw new Error("No user found or incorrect sign in method");

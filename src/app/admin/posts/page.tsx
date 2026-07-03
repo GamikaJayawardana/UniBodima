@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAllPosts, deletePostAsAdmin } from "@/app/actions/adminActions";
-import { FileText, Trash2, Loader2, ExternalLink, Building2, MapPin } from "lucide-react";
+import { FileText, Trash2, Loader2, ExternalLink, Building2, MapPin, Plus, Pencil } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPostsPage() {
@@ -47,8 +47,16 @@ export default function AdminPostsPage() {
           </h1>
           <p className="text-slate-500 font-medium">Review and moderate all housing listings and requests.</p>
         </div>
-        <div className="px-6 py-3 bg-white rounded-full border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
-          Total Posts: <span className="text-sky-600">{posts.length}</span>
+        <div className="flex items-center gap-3">
+          <div className="px-6 py-3 bg-white rounded-full border border-slate-100 shadow-sm text-sm font-bold text-slate-600">
+            Total Posts: <span className="text-sky-600">{posts.length}</span>
+          </div>
+          <Link
+            href="/create"
+            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-bold text-sm shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all"
+          >
+            <Plus className="w-4 h-4" /> Create Listing
+          </Link>
         </div>
       </div>
 
@@ -121,7 +129,7 @@ export default function AdminPostsPage() {
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
-                        <Link 
+                        <Link
                           href={`/posts/${post._id}`}
                           target="_blank"
                           className="p-3 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-xl transition-all"
@@ -129,7 +137,14 @@ export default function AdminPostsPage() {
                         >
                           <ExternalLink className="w-5 h-5" />
                         </Link>
-                        <button 
+                        <Link
+                          href={`/edit/${post._id}`}
+                          className="p-3 text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition-all"
+                          title="Edit Post"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </Link>
+                        <button
                           onClick={() => handleDelete(post._id)}
                           disabled={deletingId === post._id}
                           className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all disabled:opacity-30"

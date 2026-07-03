@@ -111,12 +111,14 @@ export default function PostCard({
             </span>
           </div>
 
-          <div className="flex justify-between items-start gap-4 mb-3">
-            <h3 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-2 min-h-[3.5rem] leading-tight">
-              {title}
-            </h3>
+          <div className="flex justify-between items-start gap-3 mb-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-black text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight min-h-[2.75rem]">
+                {title}
+              </h3>
+            </div>
             <div className="text-right shrink-0">
-              <p className="text-lg font-black text-slate-900">
+              <p className="text-lg font-black text-slate-900 whitespace-nowrap">
                 {isOffer
                   ? `LKR ${price?.toLocaleString()}`
                   : `LKR ${(budgetRange?.min || 0).toLocaleString()}+`}
