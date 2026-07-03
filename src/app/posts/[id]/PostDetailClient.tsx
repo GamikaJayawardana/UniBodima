@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { getPostById, toggleSavePost, reportPost } from "@/app/actions/postActions";
 import Navbar from "@/components/Navbar";
-import { 
-  MapPin, User, Calendar, Tag, Heart, Share2, Phone, 
-  MessageCircle, Building2, Users, Bed, Clock, ChevronLeft, 
+import {
+  MapPin, User, Calendar, Tag, Heart, Share2, Phone, PhoneCall,
+  MessageCircle, Building2, Users, Bed, Clock, ChevronLeft,
   ChevronRight, ShieldCheck, Check, Sparkles, GraduationCap,
   ArrowLeft, ArrowRight, Info, LayoutGrid, X, AlertOctagon, Flag
 } from "lucide-react";
@@ -35,6 +35,7 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
   const [reportReason, setReportReason] = useState("");
   const [reporting, setReporting] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -75,6 +76,8 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
   }
 
   const isOffer = post.type === "offer";
+  const isAuthorAdmin = post.author?.role === "admin" || post.author?.role === "super-admin";
+  const contactNumber = post.contactNumber || post.author?.phoneNumber || "";
   
   // Deriving amenities from backend structure
   const derivedAmenities = [];
@@ -150,7 +153,7 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
                   <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl backdrop-blur-md border border-white/20 ${isOffer ? 'bg-sky-600/90 text-white' : 'bg-emerald-600/90 text-white'}`}>
                     {isOffer ? 'Elite Housing Offer' : 'Student Request'}
                   </span>
-                  {(post.author?.role === 'admin' || post.author?.role === 'super-admin') && (
+                  {isAuthorAdmin && (
                     <span className="px-4 py-1.5 bg-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl backdrop-blur-md border border-rose-500/50 flex items-center gap-1.5">
                       <ShieldCheck className="w-3 h-3" /> Official Admin
                     </span>
@@ -178,13 +181,36 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
                  </div>
 
                  <div className="space-y-4">
-                    <a 
-                      href={`tel:${post.contactNumber || post.author?.phoneNumber}`}
-                      className="flex items-center justify-center gap-3 w-full py-5 bg-sky-600 text-white rounded-[24px] font-black text-lg hover:bg-sky-700 transition-all shadow-2xl shadow-sky-600/20 active:translate-y-1 group"
-                    >
-                       <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                       Call Primary Host
-                    </a>
+                    {contactNumber ? (
+                      showContact ? (
+                        <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
+                           <div className="flex items-center justify-center gap-2.5 w-full py-4 bg-sky-50 border border-sky-100 rounded-[24px] text-sky-700">
+                              <Phone className="w-4 h-4" />
+                              <span className="font-black text-lg tracking-wide">{contactNumber}</span>
+                           </div>
+                           <a
+                             href={`tel:${contactNumber}`}
+                             className="flex items-center justify-center gap-3 w-full py-5 bg-sky-600 text-white rounded-[24px] font-black text-lg hover:bg-sky-700 transition-all shadow-2xl shadow-sky-600/20 active:translate-y-1 group"
+                           >
+                              <PhoneCall className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                              Call {contactNumber}
+                           </a>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowContact(true)}
+                          className="flex items-center justify-center gap-3 w-full py-5 bg-sky-600 text-white rounded-[24px] font-black text-lg hover:bg-sky-700 transition-all shadow-2xl shadow-sky-600/20 active:translate-y-1 group"
+                        >
+                           <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                           Call Primary Host
+                        </button>
+                      )
+                    ) : (
+                      <div className="flex items-center justify-center gap-3 w-full py-5 bg-slate-100 text-slate-400 rounded-[24px] font-black text-lg cursor-not-allowed">
+                         <Phone className="w-5 h-5" />
+                         No Contact Number
+                      </div>
+                    )}
                     <button className="flex items-center justify-center gap-3 w-full py-5 bg-slate-900 text-white rounded-[24px] font-black text-lg hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">
                        <MessageCircle className="w-5 h-5" />
                        Secure WhatsApp
@@ -193,18 +219,20 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
 
                  <div className="p-5 bg-slate-50 rounded-3xl border border-slate-100">
                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg">
-                           {post.author?.name?.charAt(0) || "M"}
-                        </div>
+                        {isAuthorAdmin ? (
+                          <div className="w-14 h-14 bg-rose-600 text-white rounded-xl flex items-center justify-center shadow-lg">
+                             <ShieldCheck className="w-7 h-7" />
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg">
+                             {post.author?.name?.charAt(0) || "M"}
+                          </div>
+                        )}
                         <div>
                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Listed By</p>
-                           <p className="text-base font-black text-slate-900 leading-tight">{post.author?.name || "Member"}</p>
-                           {(post.author?.role === 'admin' || post.author?.role === 'super-admin') && (
-                             <div className="flex items-center gap-1 mt-0.5">
-                                <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
-                                <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Official Admin</span>
-                             </div>
-                           )}
+                           <p className="text-base font-black text-slate-900 leading-tight">
+                              {isAuthorAdmin ? "Admin" : (post.author?.name || "Member")}
+                           </p>
                         </div>
                      </div>
                  </div>
@@ -271,7 +299,7 @@ export default function PostDetailClient({ id, initialPost }: { id: string; init
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                    <StatCard icon={Users} label="Gender" value={post.genderPreference} colorClass="bg-indigo-50 text-indigo-600" />
                    <StatCard icon={Bed} label="Room" value={post.roomType || 'Standard'} colorClass="bg-sky-50 text-sky-600" />
-                   <StatCard icon={post.author?.role === 'admin' || post.author?.role === 'super-admin' ? ShieldCheck : User} label="Host" value={post.author?.role === 'admin' || post.author?.role === 'super-admin' ? "Admin" : "Standard"} colorClass="bg-emerald-50 text-emerald-600" />
+                   <StatCard icon={isAuthorAdmin ? ShieldCheck : User} label="Host" value={isAuthorAdmin ? "Admin" : "Standard"} colorClass="bg-emerald-50 text-emerald-600" />
                    <StatCard icon={Clock} label="Policy" value={post.occupancy ? `${post.occupancy} Pax` : "Shared"} colorClass="bg-amber-50 text-amber-600" />
                 </div>
 
