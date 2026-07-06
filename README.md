@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BoardingFor.me
+
+A full-stack housing marketplace that connects Sri Lankan university students with verified boarding places, hostels, and apartments near their campuses. Students can browse listings by university, post their own boarding offers or housing requests, and manage everything from a personal dashboard — while admins moderate content through a dedicated back office.
+
+**Live site:** [www.boardingfor.me](https://www.boardingfor.me)
+
+## Features
+
+**For students & property owners**
+- Browse and search housing **offers** (available rooms/apartments) and **requests** (students looking for a place), with filters for university, district, price/budget range, gender preference, room type, and amenities (Wi-Fi, AC, meals, parking, security, etc.)
+- Post a listing with photo uploads, pricing, lease terms, and detailed room/building amenities
+- Edit or delete your own listings, save favorites, and track views on your posts
+- University landing pages showing live listing counts near each campus
+- Click-to-reveal contact flow — a host's phone number is only shown after an explicit click, then a direct call action
+- Report inappropriate or spam listings for moderation
+- Sign in with Google or email/username + password
+
+**Admin dashboard**
+- Platform-wide stats (users, offers, requests)
+- Full CRUD over every listing on the platform, not just your own
+- User management with role changes (user / admin / super-admin) and account removal
+- A moderation queue for user-submitted reports, with one-click dismiss or takedown
+
+**SEO & performance**
+- Server-rendered metadata per listing (Open Graph, Twitter cards, canonical URLs) so individual posts are indexable and shareable
+- JSON-LD structured data (Organization, WebSite, Product/Offer) for rich search results
+- Auto-generated sitemap covering every live listing and university page, plus `robots.txt`
+- Security headers (HSTS, X-Frame-Options, Permissions-Policy) and hardened image loading via Next.js `remotePatterns`
+
+## Tech Stack
+
+| Layer | Choice |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, Server Components & Server Actions) |
+| Language | TypeScript |
+| Database | MongoDB with Mongoose |
+| Auth | NextAuth.js (Google OAuth + credentials) |
+| Image hosting | Cloudinary |
+| Styling | Tailwind CSS v4 |
+| Icons | Lucide React |
+
+## Architecture Notes
+
+- **Server Actions over a REST layer** — all data mutations (`src/app/actions/*`) run as Next.js Server Actions directly from client components, removing the need for a separate API layer for CRUD operations.
+- **Two post types, one experience** — housing offers and requests are modeled as separate Mongoose collections (`OfferPost`, `RequestPost`) since they carry very different fields, but are merged and sorted together wherever the UI needs a unified feed.
+- **Hybrid rendering for SEO** — listing detail pages are server components that fetch data for `generateMetadata` and initial paint, then hand off to a client component for interactivity (image carousel, save/report actions), so search engines see fully-rendered content without sacrificing UX.
+- **Role-based authorization** — session role (`user` / `admin` / `super-admin`) is checked server-side in every mutating action, not just hidden in the UI.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18.18+
+- A MongoDB database (Atlas or self-hosted)
+- A Cloudinary account (for image uploads)
+- A Google Cloud OAuth client (for Google sign-in)
+
+### Setup
 
 ```bash
+git clone <repository-url>
+cd boardingfor-me
+npm install
+cp .env.example .env.local
+# fill in .env.local with your own MongoDB URI, NextAuth secret,
+# Google OAuth credentials, and Cloudinary URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Run the production build |
+| `npm run lint` | Run ESLint |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── actions/        # Server Actions (auth, posts, admin, users)
+│   ├── admin/           # Admin dashboard (stats, users, posts, reports)
+│   ├── api/auth/        # NextAuth route handler
+│   ├── posts/[id]/      # Listing detail page (SSR metadata + client view)
+│   ├── university/[slug]/  # Per-university landing pages
+│   └── ...              # Offers, requests, dashboard, profile, auth pages
+├── components/          # Shared UI (Navbar, Footer, PostCard, forms, etc.)
+├── lib/                 # Database connection, constants
+└── models/              # Mongoose schemas (User, OfferPost, RequestPost, Report)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is provided for portfolio and demonstration purposes.
